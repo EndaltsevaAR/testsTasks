@@ -38,4 +38,14 @@ public class MainTest {
         assertEquals(5, intsA.get(0));
     }
 
+    @Test
+    void initSortedList() {
+        List<Integer> intsA = new ArrayList<>(Arrays.asList(1, 2, 3, 4));
+        Main.sort(intsA, 1, intsA.size());
+        assertEquals(1, intsA.get(0));
+        assertEquals(2, intsA.get(1));
+        assertEquals(3, intsA.get(2));
+        assertEquals(4, intsA.get(3));
+    }
+
 }
