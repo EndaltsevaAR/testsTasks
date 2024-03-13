@@ -47,10 +47,10 @@ public class FileProcessor {
         long freeMemoryAfter = runtime.freeMemory();
 
         System.out.println();
-        System.out.println("Time is " + (endTime - startTime));
+        System.out.println("Время выполнения программы  " + (endTime - startTime) + " миллисекунд");
         System.out
-                .println("Memory is " + Math.abs(freeMemoryAfter - freeMemoryBefore) / (1024.0 * 1024.0 * 1024.0)
-                        + " gb");
+                .println("Использовано " + Math.abs(freeMemoryAfter - freeMemoryBefore) / (1024.0 * 1024.0 * 1024.0)
+                        + " гб памяти");
 
     }
 
@@ -144,8 +144,11 @@ public class FileProcessor {
             } else {
                 values = new HashSet<>();
             }
-            values.add(line.get(i));
-            columnValues.put(i, values);
+
+            if (!line.get(i).equals("")) {
+                values.add(line.get(i));
+                columnValues.put(i, values);
+            }
         }
     }
 
