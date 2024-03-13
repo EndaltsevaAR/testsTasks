@@ -1,14 +1,19 @@
 package uno.soft;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,9 +39,7 @@ public class FileProcessor {
         long freeMemoryBefore = runtime.freeMemory();
 
         List<List<String>> lines = readFile();
-        List<List<List<String>>> groupedLines = groupingLines(lines); // лист сверху - это список групп, следущий -
-                                                                      // список строк в группе, последний - список
-                                                                      // подстрок в строке
+        List<List<List<String>>> groupedLines = groupingLines(lines);
 
         printLines(groupedLines);
 
@@ -46,16 +49,17 @@ public class FileProcessor {
         System.out.println();
         System.out.println("Time is " + (endTime - startTime));
         System.out
-                .println("Memory is " + Math.abs(freeMemoryAfter - freeMemoryBefore) / (1024.0 * 1024.0 * 1024.0));
+                .println("Memory is " + Math.abs(freeMemoryAfter - freeMemoryBefore) / (1024.0 * 1024.0 * 1024.0)
+                        + " gb");
 
     }
 
     private List<List<List<String>>> groupingLines(List<List<String>> lines) {
         List<List<List<String>>> groups = new ArrayList<>();
-        while (!lines.isEmpty()) { // мы проходим по всему списку, пока не опустошим его
+        while (!lines.isEmpty()) {
             List<List<String>> currentGroup = new ArrayList<>();
 
-            Map<Integer, Set<String>> columnValues = new HashMap(); // обработка первой строки
+            Map<Integer, Set<String>> columnValues = new HashMap();
             for (int i = 0; i < lines.get(0).size(); i++) {
                 Set<String> values = new HashSet<>();
                 values.add(lines.get(0).get(i));
@@ -90,10 +94,10 @@ public class FileProcessor {
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line = null;
             while ((line = reader.readLine()) != null) {
-                List<String> splitedLine = Arrays.asList(line.split(";")); // разделенная строк
+                List<String> splitedLine = Arrays.asList(line.split(";"));
                 boolean isOk = true;
-                for (String subLine : splitedLine) { // смотрим нет ли неправильных форматов
-                    if (countOccurrences(subLine, '"') != 2) { // подумать еще варианты падения
+                for (String subLine : splitedLine) {
+                    if (countOccurrences(subLine, '"') != 2) {
                         isOk = false;
                         break;
                     }
@@ -123,7 +127,7 @@ public class FileProcessor {
         Set<Integer> columnIndexes = columnValues.keySet();
         for (int i = 0; i < line.size(); i++) {
             if (columnIndexes.contains(i)) {
-                if (columnValues.get(i).contains(line.get(i))) {
+                if (columnValues.get(i).contains(line.get(i)) && (!line.get(i).equals(""))) {
                     return true;
                 }
             }
@@ -146,12 +150,30 @@ public class FileProcessor {
     }
 
     private void printLines(List<List<List<String>>> groupedLines) {
-        for (int i = 0; i < groupedLines.size(); i++) {
-            System.out.println("Группа " + (i + 1));
-            for (List<String> line : groupedLines.get(i)) {
-                System.out.println(String.join(";", line));
+        String filePath = "output.txt";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
+            Iterator<List<List<String>>> iterator = groupedLines.iterator();
+            while (iterator.hasNext()) {
+                List<List<String>> group = iterator.next();
+                if (group.size() <= 1) {
+                    iterator.remove();
+                }
             }
-            System.out.println();
+
+            Collections.sort(groupedLines, Comparator.comparingInt(List::size));
+            System.out.println("Всего " + groupedLines.size() + " групп");
+
+            for (int i = groupedLines.size() - 1; i >= 0; i--) {
+                writer.write("Группа " + (i + 1));
+                writer.newLine();
+                for (List<String> line : groupedLines.get(i)) {
+                    writer.write(String.join(";", line));
+                    writer.newLine();
+                }
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
